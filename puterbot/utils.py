@@ -12,7 +12,6 @@ import numpy as np
 
 from puterbot.common import MOUSE_EVENTS, KEY_EVENTS
 
-
 EMPTY = (None, [], {}, "")
 
 
@@ -60,10 +59,10 @@ def round_timestamps(events, num_digits):
 
 
 def rows2dicts(
-    rows,
-    drop_empty=True,
-    drop_constant=True,
-    num_digits=None,
+        rows,
+        drop_empty=True,
+        drop_constant=True,
+        num_digits=None,
 ):
     if num_digits:
         round_timestamps(rows, num_digits)
@@ -89,8 +88,8 @@ def rows2dicts(
             for key in list(row_dict.keys()):
                 value = row_dict[key]
                 if (
-                    len(key_to_values[key]) <= 1
-                    or drop_empty and value in EMPTY
+                        len(key_to_values[key]) <= 1
+                        or drop_empty and value in EMPTY
                 ):
                     del row_dict[key]
     for row_dict in row_dicts:
@@ -150,12 +149,12 @@ def get_monitor_dims():
 
 
 def draw_ellipse(
-    x, y, image,
-    width_pct=.03,
-    height_pct=.03,
-    fill_transparency=.25,
-    outline_transparency=.5,
-    outline_width=2,
+        x, y, image,
+        width_pct=.03,
+        height_pct=.03,
+        fill_transparency=.25,
+        outline_transparency=.5,
+        outline_width=2,
 ):
     overlay = Image.new("RGBA", image.size)
     draw = ImageDraw.Draw(overlay)
@@ -191,14 +190,14 @@ def get_font(original_font_name, font_size):
 
 
 def draw_text(
-    x, y, text, image,
-    font_size_pct=0.01,
-    font_name="Arial.ttf",
-    fill=(255, 0, 0),
-    stroke_fill=(255, 255, 255),
-    stroke_width=3,
-    outline=False,
-    outline_padding=10,
+        x, y, text, image,
+        font_size_pct=0.01,
+        font_name="Arial.ttf",
+        fill=(255, 0, 0),
+        stroke_fill=(255, 255, 255),
+        stroke_width=3,
+        outline=False,
+        outline_padding=10,
 ):
     overlay = Image.new("RGBA", image.size)
     draw = ImageDraw.Draw(overlay)
@@ -234,15 +233,15 @@ def draw_text(
 
 
 def draw_rectangle(
-    x0, y0, x1, y1, image,
-    bg_color=(0, 0, 0),
-    fg_color=(255, 255, 255),
-    outline_color=(255, 0, 0),
-    bg_transparency=0.25,
-    fg_transparency=0,
-    outline_transparency=0.5,
-    outline_width=2,
-    invert=False,
+        x0, y0, x1, y1, image,
+        bg_color=(0, 0, 0),
+        fg_color=(255, 255, 255),
+        outline_color=(255, 0, 0),
+        bg_transparency=0.25,
+        fg_transparency=0,
+        outline_transparency=0.5,
+        outline_width=2,
+        invert=False,
 ):
     if invert:
         bg_color, fg_color = fg_color, bg_color
@@ -269,12 +268,12 @@ def get_scale_ratios(input_event):
 
 
 def display_event(
-    input_event,
-    marker_width_pct=.03,
-    marker_height_pct=.03,
-    marker_fill_transparency=.25,
-    marker_outline_transparency=.5,
-    diff=False,
+        input_event,
+        marker_width_pct=.03,
+        marker_height_pct=.03,
+        marker_fill_transparency=.25,
+        marker_outline_transparency=.5,
+        diff=False,
 ):
     recording = input_event.recording
     window_event = input_event.window_event
@@ -302,7 +301,7 @@ def display_event(
                 outline_color=(255, 0, 0),
                 bg_transparency=0,
                 fg_transparency=0,
-                #outline_transparency=.75,
+                # outline_transparency=.75,
                 outline_width=20,
             )
 
@@ -369,6 +368,37 @@ def take_screenshot() -> mss.base.ScreenShot:
         monitor = sct.monitors[0]
         sct_img = sct.grab(monitor)
     return sct_img
+
+
+def crop(window_coordinates):
+    """
+        Crop a region from a screenshot based on the specified window coordinates.
+
+        Args:
+            screenshot (mss.ScreenShot): The original screenshot object.
+            window_coordinates (tuple): The coordinates of the window to crop in the format (left, top, right, bottom).
+
+        Returns:
+            mss.ScreenShot: The cropped screenshot object.
+
+        Raises:
+            ValueError: If the window coordinates are not valid (left >= right or top >= bottom).
+    """
+    left, top, right, bottom = window_coordinates
+
+
+    # Calculate the width and height of the cropping region
+    width = right - left
+    height = bottom - top
+    with mss.mss() as sct:
+        monitor = {"top": top, "left": left, "width": width, "height": height}
+        # Grab the data
+        crop_sct_img = sct.grab(monitor)
+
+    return crop_sct_img
+
+
+
 
 
 def get_strategy_class_by_name():
