@@ -40,7 +40,6 @@ from puterbot.utils import (
     take_screenshot,
     get_timestamp,
     set_start_time,
-    crop,
 )
 
 
@@ -340,94 +339,7 @@ def handle_key(
             **canonical_attrs
         }
     )
-def get_active_window_coordinates_windows():
-    """
-        Get the coordinates of the active window on Windows.
 
-        Returns:
-            tuple: A tuple of left, top, right, and bottom coordinates of the active window.
-    """
-    # Use the "GetForegroundWindow" and "GetWindowRect" functions from the "win32gui" module
-    import win32gui
-
-    hwnd = win32gui.GetForegroundWindow()
-    rect = win32gui.GetWindowRect(hwnd)
-    left, top, right, bottom = rect
-
-    return (left, top, right, bottom)
-
-def get_active_window_coordinates_macos():
-    """
-        Get the coordinates of the active window on macOS.
-
-        Returns:
-            tuple: A tuple of left, top, right, and bottom coordinates of the active window.
-    """
-    # Use the "screencapture" command-line tool and AppleScript to get the active window coordinates
-    command = "screencapture -l$(osascript -e 'tell application \"System Events\" to get id of front window')"
-    output = subprocess.check_output(command, shell=True)
-    output = output.decode("utf-8").strip().split(",")
-    left, top, width, height = map(int, output)
-
-    right = left + width
-    bottom = top + height
-
-    return (left, top, right, bottom)
-
-def get_active_window_coordinates_linux():
-    """
-        Get the coordinates of the active window on Linux.
-
-        Returns:
-            tuple: A tuple of left, top, right, and bottom coordinates of the active window.
-    """
-    # Use the "xdotool" command-line tool to get the active window coordinates
-    command = "xdotool getwindowgeometry $(xdotool getactivewindow)"
-    output = subprocess.check_output(command, shell=True)
-    output = output.decode("utf-8").strip().split("\n")[1]
-    left, top, width, height = map(int, output.split()[1:5])
-
-    right = left + width
-    bottom = top + height
-
-    return (left, top, right, bottom)
-def get_active_window_coordinates():
-    """
-        Get the coordinates of the active window based on the current operating system.
-
-        Returns:
-            tuple: A tuple of left, top, right, and bottom coordinates of the active window.
-
-        Raises:
-            NotImplementedError: If the platform is not supported.
-    """
-    system = sys.platform
-
-    if system == "win32":
-        return get_active_window_coordinates_windows()
-    elif system == "darwin":
-        return get_active_window_coordinates_macos()
-    elif system == "linux":
-        return get_active_window_coordinates_linux()
-    else:
-        raise NotImplementedError("Platform not supported")
-def crop_active_window() :
-    """
-        Crop the active window from a screenshot.
-
-        Returns:
-            mss.base.ScreenShot: Cropped screenshot of the active window.
-    """
-    # Take a screenshot
-    screenshot = take_screenshot()
-
-    # Get the active window coordinates
-    window_coordinates = get_active_window_coordinates()
-
-    # Crop the screenshot using the window coordinates
-    cropped_image = crop(window_coordinates)
-
-    return cropped_image
 def read_screen_events(
     event_q: queue.Queue,
     terminate_event: multiprocessing.Event,
@@ -446,10 +358,30 @@ def read_screen_events(
     set_start_time(recording_timestamp)
     logger.info(f"starting")
     while not terminate_event.is_set():
-        screenshot = crop_active_window()
+        screenshot = take_screenshot()
         if screenshot is None:
             logger.warning("screenshot was None")
             continue
+        # Crop the screenshot if an active window is provided
+        # Crop the screenshot to the active window
+        if sys.platform == "darwin":
+            # For macOS
+            title = pgw.getActiveWindow()
+            geometry = pgw.getWindowGeometry(title)
+        else:
+            # For Windows and Linux
+            window = pgw.getActiveWindow()
+            geometry = window.box
+        if geometry is not None:
+            left, top, width, height = geometry
+            with mss.mss() as sct:
+                # monitor 0 is all in one
+                monitor = {"top": top, "left": left, "width": width,
+                           "height": height}
+                # Grab the data
+                crop_sct_img = sct.grab(monitor)
+                screenshot = crop_sct_img
+
         event_q.put(Event(get_timestamp(), "screen", screenshot))
     logger.info("done")
 

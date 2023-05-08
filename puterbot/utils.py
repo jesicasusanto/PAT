@@ -369,38 +369,6 @@ def take_screenshot() -> mss.base.ScreenShot:
         sct_img = sct.grab(monitor)
     return sct_img
 
-
-def crop(window_coordinates):
-    """
-        Crop a region from a screenshot based on the specified window coordinates.
-
-        Args:
-            screenshot (mss.ScreenShot): The original screenshot object.
-            window_coordinates (tuple): The coordinates of the window to crop in the format (left, top, right, bottom).
-
-        Returns:
-            mss.ScreenShot: The cropped screenshot object.
-
-        Raises:
-            ValueError: If the window coordinates are not valid (left >= right or top >= bottom).
-    """
-    left, top, right, bottom = window_coordinates
-
-
-    # Calculate the width and height of the cropping region
-    width = right - left
-    height = bottom - top
-    with mss.mss() as sct:
-        monitor = {"top": top, "left": left, "width": width, "height": height}
-        # Grab the data
-        crop_sct_img = sct.grab(monitor)
-
-    return crop_sct_img
-
-
-
-
-
 def get_strategy_class_by_name():
     from puterbot.strategies import BaseReplayStrategy
     strategy_classes = BaseReplayStrategy.__subclasses__()
