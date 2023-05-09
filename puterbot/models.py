@@ -5,6 +5,7 @@ from pynput import keyboard
 from PIL import Image, ImageChops
 import numpy as np
 import sqlalchemy as sa
+from sqlalchemy.orm import Session
 
 from puterbot.db import Base
 from puterbot.utils import take_screenshot
@@ -209,6 +210,14 @@ class Screenshot(Base):
         sct_img = take_screenshot()
         screenshot = Screenshot(sct_img=sct_img)
         return screenshot
+
+    @classmethod
+    def get_active_window(cls):
+        session = Session()
+        # Query the most recent WindowEvent
+        latest_window_event = session.query(WindowEvent).order_by(sa.desc(WindowEvent.timestamp)).first()
+        session.close()
+        return latest_window_event
 
 
 class WindowEvent(Base):

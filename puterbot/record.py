@@ -5,7 +5,7 @@ Usage:
     $ python puterbot/record.py "<description of task to be recorded>"
 
 """
-import subprocess
+
 from collections import Counter, defaultdict, namedtuple
 from functools import partial
 from typing import Any, Callable, Dict
@@ -340,6 +340,7 @@ def handle_key(
         }
     )
 
+
 def read_screen_events(
     event_q: queue.Queue,
     terminate_event: multiprocessing.Event,
@@ -362,26 +363,6 @@ def read_screen_events(
         if screenshot is None:
             logger.warning("screenshot was None")
             continue
-        # Crop the screenshot if an active window is provided
-        # Crop the screenshot to the active window
-        if sys.platform == "darwin":
-            # For macOS
-            title = pgw.getActiveWindow()
-            geometry = pgw.getWindowGeometry(title)
-        else:
-            # For Windows and Linux
-            window = pgw.getActiveWindow()
-            geometry = window.box
-        if geometry is not None:
-            left, top, width, height = geometry
-            with mss.mss() as sct:
-                # monitor 0 is all in one
-                monitor = {"top": top, "left": left, "width": width,
-                           "height": height}
-                # Grab the data
-                crop_sct_img = sct.grab(monitor)
-                screenshot = crop_sct_img
-
         event_q.put(Event(get_timestamp(), "screen", screenshot))
     logger.info("done")
 
