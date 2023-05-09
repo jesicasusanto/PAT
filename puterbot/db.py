@@ -3,7 +3,6 @@ from dictalchemy import DictableModel
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import MetaData
 from sqlalchemy.ext.declarative import declarative_base
-
 from puterbot.config import DB_ECHO, DB_URL
 from puterbot.utils import EMPTY, row2dict
 
