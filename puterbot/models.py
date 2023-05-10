@@ -219,6 +219,17 @@ class Screenshot(Base):
         finally:
             Session.close()
 
+    def crop_active_window(self, window_event):
+        #crops the screenshot's image to the bounds of the window_event
+        if window_event:
+            box = (
+                window_event.left,
+                window_event.top,
+                window_event.left + window_event.width,
+                window_event.top + window_event.height
+            )
+            self._image = self._image.crop(box)
+
 
 class WindowEvent(Base):
     __tablename__ = "window_event"
