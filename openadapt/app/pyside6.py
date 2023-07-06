@@ -37,6 +37,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.menu.addAction(self.quit)
 
         self.tray.setContextMenu(self.menu)
+        self.current_state = "default"
 
     def _quick_record(self):
         Notify("OpenAdapt", "Starting recording...", "OpenAdapt").send()
